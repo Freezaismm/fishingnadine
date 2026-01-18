@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Waktunya mancinggg</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #ff007f; --b: #00d4ff; --y: #f1c40f; }
+        * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
+        body { margin: 0; background: #111; font-family: 'Press Start 2P', cursive; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+
+        /* KONSOL FRAME */
+        #console {
+            width: 360px; height: 720px;
+            background: linear-gradient(145deg, #2f3640, #1e272e);
+            border-radius: 40px; padding: 20px;
+            border: 5px solid #57606f;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+
+        #screen-frame {
+            width: 100%; height: 400px; background: #000;
+            border-radius: 10px; padding: 10px; margin-bottom: 20px;
+        }
+
+        #screen {
+            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #87CEEB 30%, #2980b9 30%);
+            border-radius: 4px; position: relative; overflow: hidden;
+        }
+
+        #hud {
+            position: absolute; top: 10px; left: 10px; z-index: 20;
+            font-size: 8px; color: white; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;
+        }
+
+        /* ELEMEN GAMEPLAY */
+        #rod {
+            position: absolute; top: 10px; right: 20px; font-size: 30px; z-index: 10;
+            transition: right 0.1s linear; /* Gerakan pancing */
+        }
+        #line {
+            position: absolute; top: 40px; right: 48px; width: 2px; height: 0; 
+            background: white; z-index: 9;
+            transition: right 0.1s linear; /* Tali ikut pancing */
+        }
+        #hook {
+            position: absolute; top: 40px; right: 41px; font-size: 16px; z-index: 9; display: none;
+            transition: right 0.1s linear; /* Kail ikut pancing */
+        }
+
+        .fish {
+            position: absolute; font-size: 24px; z-index: 5;
+            /* Ikan bergerak pakai JS sekarang */
+        }
+
+        /* CONTROLLER */
+        #controls { width: 100%; flex: 1; display: flex; flex-direction: column; justify-content: space-around; }
+        .dpad-area { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
+        .dpad { width: 100px; height: 100px; position: relative; }
+        .btn-dir { position: absolute; width: 30px; height: 30px; background: #222; border: 2px solid #444; }
+        .left { top:35px; left:0; } .right { top:35px; right:0; }
+        
+        .abxy { width: 100px; height: 100px; position: relative; }
+        .btn-act {
+            position: absolute; width: 55px; height: 55px; top: 20px; right: 10px;
+            border-radius: 50%; background: radial-gradient(circle, #555, #222);
+            border: 3px solid var(--p); color: white; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 5px 0 #000; cursor: pointer; font-size: 14px;
+        }
+        .btn-act:active { transform: translateY(4px); box-shadow: none; }
+
+        /* LAYAR AWAL & MENANG */
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 10px; }
+        .photo { width: 100px; height: 100px; border: 3px solid var(--y); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        .photo img { width: 100%; height: 100%; object-fit: cover; }
+        #msg { background: white; color: black; padding: 10px; font-size: 10px; text-align: left; max-height: 250px; overflow-y: auto; width: 90%; line-height: 1.6; border-radius: 10px; }
+
+    </style>
+</head>
+<body>
+
+<div id="console">
+    <div style="font-size:8px; color:#555; margin-bottom:5px;">Nintendo Mahar</div>
+    
+    <div id="screen-frame">
+        <div id="screen">
+            <div id="hud">IKAN: <span id="score">0</span>/10</div>
+            
+            <div id="rod">🎣</div>
+            <div id="line"></div>
+            <div id="hook">🪝</div>
+
+            <div id="start" class="overlay">
+                <div style="color:var(--y); margin-bottom:10px;">Love on the Line</div>
+                <div class="photo"><img src="https://img.sanishtech.com/u/09c97329fca5dfccfa62caa97bce08d0.png" alt="Nadine"></div>
+                <div style="font-size:6px; color:#ccc; line-height:1.5;">
+                    Game mancing yang di ciptakan dengan penuh cintaaaa<br>
+                   <br>
+                   click to start yaawww
+                </div>
+            </div>
+
+            <div id="win" class="overlay" style="display:none;">
+                <div style="color:var(--p); margin-bottom:10px;">YESS DAPET BANYAK IKANN 🎣❤️</div>
+                <div id="msg"></div>
+                <button onclick="location.reload()" style="margin-top:10px; padding:8px; background:var(--b); border:none; font-family:inherit; font-size:7px;">RESTART</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div style="text-align:center; font-size:6px; color:#444;">Bismillah ● nintendo 4 wedding</div>
+        <div class="dpad-area">
+            <div class="dpad">
+                <div class="btn-dir left" onpointerdown="moveStart(-1)" onpointerup="moveStop()"></div>
+                <div class="btn-dir right" onpointerdown="moveStart(1)" onpointerup="moveStop()"></div>
+                <div style="position:absolute; top:35px; left:35px; width:30px; height:30px; background:#111;"></div>
+            </div>
+            
+            <div class="abxy">
+                <div class="btn-act" onpointerdown="castLine()">🪝</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let active = false;
+    let score = 0;
+    let rodX = 20; // Posisi pancing dari KANAN (px)
+    let rodSpeed = 0;
+    let moveInterval;
+    
+    let isCasting = false;
+    let hookY = 0;
+    let castingInterval;
+    
+    let fishes = []; // Array untuk menyimpan data ikan hidup
+    let audioCtx;
+
+    // Elements
+    const rodEl = document.getElementById('rod');
+    const lineEl = document.getElementById('line');
+    const hookEl = document.getElementById('hook');
+    const screenEl = document.getElementById('screen');
+    const scoreEl = document.getElementById('score');
+
+    // Audio Init
+    function playSound(f, type='sine') {
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.frequency.value = f; o.type = type;
+        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + 0.1);
+    }
+
+    // --- GAME LOOP UTAMA (60 FPS) ---
+    function gameLoop() {
+        if(!active) return;
+
+        // 1. Logic Gerak Pancing
+        if(rodSpeed !== 0 && !isCasting) {
+            rodX -= rodSpeed; // Minus karena 'right' property
+            if(rodX < -10) rodX = -10;
+            if(rodX > 280) rodX = 280;
+            
+            rodEl.style.right = rodX + 'px';
+            lineEl.style.right = (rodX + 28) + 'px';
+            hookEl.style.right = (rodX + 21) + 'px';
+        }
+
+        // 2. Logic Gerak Ikan & Tabrakan
+        fishes.forEach((fish, index) => {
+            if(!fish.caught) {
+                fish.x -= fish.speed; // Gerak ke kiri
+                fish.el.style.left = fish.x + 'px';
+                
+                // Hapus kalau keluar layar
+                if(fish.x < -50) {
+                    fish.el.remove();
+                    fishes.splice(index, 1);
+                }
+            } else {
+                // Kalau tertangkap, ikan ikut posisi kail
+                // Hitung posisi visual (Screen Width - Rod Pos - Offset)
+                let visualHookX = screenEl.offsetWidth - rodX - 45; 
+                fish.el.style.left = visualHookX + 'px';
+                fish.el.style.top = (40 + hookY) + 'px';
+            }
+        });
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // --- KONTROL PANCING ---
+    function moveStart(dir) {
+        if(!active) return;
+        rodSpeed = dir * 3; // Kecepatan geser
+    }
+    function moveStop() {
+        rodSpeed = 0;
+    }
+
+    // --- START GAME ---
+    function castLine() {
+        if(!active) {
+            document.getElementById('start').style.display = 'none';
+            active = true;
+            spawnFishLoop();
+            gameLoop();
+            return;
+        }
+
+        if(isCasting) return; // Jangan spam tombol
+        isCasting = true;
+        hookEl.style.display = 'block';
+        playSound(400, 'triangle');
+
+        // ANIMASI KAIL TURUN
+        castingInterval = setInterval(() => {
+            hookY += 4;
+            lineEl.style.height = hookY + 'px';
+            hookEl.style.top = (40 + hookY) + 'px';
+
+            // Cek Tabrakan (Collision Detection)
+            let hookScreenX = screenEl.offsetWidth - rodX - 41; // Posisi X kail di layar
+            
+            // Loop cek semua ikan
+            for(let i=0; i<fishes.length; i++) {
+                let f = fishes[i];
+                // Hitbox logic
+                if(!f.caught && 
+                   Math.abs(f.x - hookScreenX) < 20 && // X deketan
+                   Math.abs(f.y - (40 + hookY)) < 20)  // Y deketan
+                {
+                    catchFish(f);
+                    break; // Cukup tangkap 1
+                }
+            }
+
+            // Batas bawah atau sudah dapet ikan -> Tarik naik
+            if(hookY > 300) {
+                reelIn();
+            }
+        }, 10);
+    }
+
+    function catchFish(fish) {
+        fish.caught = true; // Tandai tertangkap
+        fish.el.style.transform = "rotate(-90deg)"; // Efek ikan ngegantung
+        playSound(600, 'square');
+        reelIn(); // Langsung tarik
+    }
+
+    function reelIn() {
+        clearInterval(castingInterval);
+        
+        let reelInterval = setInterval(() => {
+            hookY -= 6; // Tarik lebih cepat
+            if(hookY < 0) hookY = 0;
+            
+            lineEl.style.height = hookY + 'px';
+            hookEl.style.top = (40 + hookY) + 'px';
+
+            if(hookY <= 0) {
+                clearInterval(reelInterval);
+                isCasting = false;
+                hookEl.style.display = 'none';
+                
+                // Cek ada ikan yang nyangkut ga
+                let caughtFishIndex = fishes.findIndex(f => f.caught);
+                if(caughtFishIndex !== -1) {
+                    // Score +1
+                    score++;
+                    scoreEl.innerText = score;
+                    playSound(800, 'sine');
+                    
+                    // Hapus ikan dari layar
+                    fishes[caughtFishIndex].el.remove();
+                    fishes.splice(caughtFishIndex, 1);
+
+                    if(score >= 10) winGame();
+                }
+            }
+        }, 10);
+    }
+
+    // --- SPAWN IKAN ---
+    function spawnFishLoop() {
+        if(!active) return;
+        
+        let el = document.createElement('div');
+        el.className = 'fish';
+        el.innerText = ['🐠','🐡','🦈','🦑'][Math.floor(Math.random()*4)];
+        
+        // Posisi Start
+        let startY = 150 + Math.random() * 150; // Kedalaman acak
+        el.style.top = startY + 'px';
+        screenEl.appendChild(el);
+
+        // Masukkan ke array object
+        fishes.push({
+            el: el,
+            x: 380, // Mulai dari kanan luar layar
+            y: startY,
+            speed: 1.5 + Math.random() * 2, // Kecepatan beda-beda
+            caught: false
+        });
+
+        setTimeout(spawnFishLoop, 1500 + Math.random() * 2000);
+    }
+
+    function winGame() {
+        active = false;
+        document.getElementById('win').style.display = 'flex';
+        
+        let melody = [523, 659, 783, 1046];
+        melody.forEach((n, i) => setTimeout(() => playSound(n), i*200));
+
+        let txt = `HAI HAI HAIII SAYANGKU CINTAKUUU\n\nwahh mancing di game nihhh, seruu gaaa bisa dapet banyak ikannn?? semogaa seruu yaaa, dann semogaa kita bisa mancing di dunia nyataa jugaa kedepannyaaa.. aamiin aamiin\n\nharii ini seruu bangett yaaakkk.. alhamdulillah dehh bener bener bakal jadi perjalanan yang ga bakal ku lupainn harii iniiii, seruu bangett bisa jalan jalan sama kamuuu, pagi pagii di tempat baruuu, di tempat yang sejukk nyamann indahhh.. seruu bangett dehh gara gara jalan jalan sama kamuu aku jadi tauu susukan kaya gimanaaa, teruss jadii tauu banyak tempat di ungarann yang asikkk.. seruu bangett deh pokoknyaa hari inii. bener bener bisa menikmati perjalanann akuu tuuhhh.. makasihh banyakk jugaa yaa uda traktirr bubur ayamnyaaa yaaa.. aduhh kalau di ceritakan mah pokoknyaa seru bangett dehhh.. alhamdulillah yaa dengan perjalanan yang se seru ini kita jadi tida merasakann capeee hehehehee alhamdulillahhh, pokoknyaa fathan pengenn ini sering sering di lakukan dehh kalau bisa setiap mingguu wkwkwkwk.. besok minggu gantian ke daerahkuu gimanaa?? sepertinyaa seruu kaannn wkkwkwkwkw kalau kamu mau dan bisaa gass ajaaa wkwkwkwk..\n\nyaa fatjan minta maaf jugaa yaa atas kejadian hari iniii yang bikin kamu emosii, semogaa kejadian ini sudah berlalu dan kita bisaa seneng seneng lagi yaakkk.\n\nokeeyydee mumpung sudaa boboo aku mau ngucapinn selamat istirahaatt yaa cantikkk, bobo yang nyenyakk atuu yaakk.. semogaa besok pagii upraknyaa lancar semuaaa yaaa sayangg.. aamiin aamiin.. okeydee sampai berjumpa besokk yaaa, goodnight sayanggku cintakuuu.. mimpi indahh yaaaa.. paipai paiapiii.. jee t'aimeeee bieennn sayanggku cintakuuu💙🩵💙🩵💙🩵💙🩵🩷🤍💜❤️🤍🩷💜🩷❤️💜🩷`;
+        
+        let msg = document.getElementById('msg');
+        msg.innerHTML = "";
+        let i = 0;
+        function type() {
+            if(i < txt.length) {
+                msg.innerHTML += txt[i] === '\n' ? '<br>' : txt[i];
+                i++; setTimeout(type, 40);
+            }
+        }
+        type();
+    }
+</script>
+</body>
+</html>
